@@ -1,6 +1,7 @@
 # Olist Copilot 🛒
 
 A production-ready GenAI agentic system for natural-language analytics. Ask questions in **any language**, get SQL-powered insights with auto-generated charts.
+Video Link - 
 
 ---
 
@@ -79,7 +80,7 @@ Open http://localhost:8501 🎉
 
 ## 🎬 Demo Walkthrough
 
-Drop your demo or showcase video link here once it’s published:
+Video link:
 
 ```
 https://youtu.be/your-demo-link
