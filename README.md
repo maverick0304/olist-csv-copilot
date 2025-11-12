@@ -2,9 +2,9 @@
 
 A production-ready GenAI agentic system for natural-language analytics. Ask questions in **any language**, get SQL-powered insights with auto-generated charts.
 
-## 🎬 Demo Walkthrough
+## 🎬 Walkthrough
 
-Video link:
+Video link: https://drive.google.com/drive/folders/1K3GFHg33HvE-udz3jVCpZYD67yr9skao?usp=sharing
 
 ```
 https://youtu.be/your-demo-link
