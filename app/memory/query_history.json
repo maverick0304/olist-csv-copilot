@@ -173,5 +173,115 @@
     "user_query": "What are the top 5 product categories by GMV in 2018?",
     "sql": "SELECT \n    oif.category_name_en as category,\n    SUM(oif.total_value) as gmv\nFROM order_item_facts oif\nJOIN order_facts of ON oif.order_id = of.order_id\nWHERE of.purchase_year = 2018\nGROUP BY oif.category_name_en\nORDER BY gmv DESC\nLIMIT 5",
     "timestamp": "2025-11-12T21:03:00.924986"
+  },
+  {
+    "user_query": "What are the top 5 product categories by GMV in 2018?",
+    "sql": "SELECT \n    oif.category_name_en as category,\n    SUM(oif.total_value) as gmv\nFROM order_item_facts oif\nJOIN order_facts of ON oif.order_id = of.order_id\nWHERE of.purchase_year = 2018\nGROUP BY oif.category_name_en\nORDER BY gmv DESC\nLIMIT 5",
+    "timestamp": "2025-11-12T22:28:48.032662"
+  },
+  {
+    "user_query": "What are the top 5 product categories by GMV in 2018?",
+    "sql": "SELECT \n    oif.category_name_en as category,\n    SUM(oif.total_value) as gmv\nFROM order_item_facts oif\nJOIN order_facts of ON oif.order_id = of.order_id\nWHERE of.purchase_year = 2018\nGROUP BY oif.category_name_en\nORDER BY gmv DESC\nLIMIT 5",
+    "timestamp": "2025-11-12T22:29:31.749860"
+  },
+  {
+    "user_query": "What are the top 5 product categories by GMV in 2018?",
+    "sql": "SELECT \n    oif.category_name_en as category,\n    SUM(oif.total_value) as gmv\nFROM order_item_facts oif\nJOIN order_facts of ON oif.order_id = of.order_id\nWHERE of.purchase_year = 2018\nGROUP BY oif.category_name_en\nORDER BY gmv DESC\nLIMIT 5",
+    "timestamp": "2025-11-12T22:43:15.175571"
+  },
+  {
+    "user_query": "What are the top 5 product categories by GMV in 2018?",
+    "sql": "SELECT \n    oif.category_name_en as category,\n    SUM(oif.total_value) as gmv\nFROM order_item_facts oif\nJOIN order_facts of ON oif.order_id = of.order_id\nWHERE of.purchase_year = 2018\nGROUP BY oif.category_name_en\nORDER BY gmv DESC\nLIMIT 5",
+    "timestamp": "2025-11-12T22:43:46.550942"
+  },
+  {
+    "user_query": "What are the top 5 product categories by GMV in 2018?",
+    "sql": "SELECT \n    oif.category_name_en as category,\n    SUM(oif.total_value) as gmv\nFROM order_item_facts oif\nJOIN order_facts of ON oif.order_id = of.order_id\nWHERE of.purchase_year = 2018\nGROUP BY oif.category_name_en\nORDER BY gmv DESC\nLIMIT 5",
+    "timestamp": "2025-11-12T22:45:12.924390"
+  },
+  {
+    "user_query": "\u0915\u0943\u092a\u092f\u093e \u092e\u0941\u091d\u0947 \u0907\u0932\u0947\u0915\u094d\u091f\u094d\u0930\u0949\u0928\u093f\u0915\u094d\u0938 \u0936\u094d\u0930\u0947\u0923\u0940 \u0915\u093e \u0915\u0941\u0932 GMV \u0926\u093f\u0916\u093e\u090f\u0901",
+    "sql": "SELECT \n    SUM(oif.total_value) as total_gmv\nFROM \n    order_item_facts oif\nJOIN \n    order_facts of ON oif.order_id = of.order_id\nWHERE \n    of.purchase_year = 2018\n    AND LOWER(oif.category_name_en) LIKE '%electronics%'",
+    "timestamp": "2025-11-12T22:46:33.769335"
+  },
+  {
+    "user_query": "What are the top 5 product categories by GMV in 2018?",
+    "sql": "SELECT \n    oif.category_name_en as category,\n    SUM(oif.total_value) as gmv\nFROM order_item_facts oif\nJOIN order_facts of ON oif.order_id = of.order_id\nWHERE of.purchase_year = 2018\nGROUP BY oif.category_name_en\nORDER BY gmv DESC\nLIMIT 5",
+    "timestamp": "2025-11-12T22:47:38.852962"
+  },
+  {
+    "user_query": "\u0915\u0943\u092a\u092f\u093e \u092e\u0941\u091d\u0947 \u0907\u0932\u0947\u0915\u094d\u091f\u094d\u0930\u0949\u0928\u093f\u0915\u094d\u0938 \u0936\u094d\u0930\u0947\u0923\u0940 \u0915\u093e \u0915\u0941\u0932 GMV \u0926\u093f\u0916\u093e\u090f\u0901",
+    "sql": "SELECT * FROM order_summary LIMIT 10",
+    "timestamp": "2025-11-12T22:48:23.993278"
+  },
+  {
+    "user_query": "\u0915\u0943\u092a\u092f\u093e \u092e\u0941\u091d\u0947 \u0907\u0932\u0947\u0915\u094d\u091f\u094d\u0930\u0949\u0928\u093f\u0915\u094d\u0938 \u0936\u094d\u0930\u0947\u0923\u0940 \u0915\u093e \u0915\u0941\u0932 GMV \u0926\u093f\u0916\u093e\u090f\u0901",
+    "sql": "SELECT * FROM order_summary LIMIT 10",
+    "timestamp": "2025-11-12T22:49:49.307261"
+  },
+  {
+    "user_query": "What are the top 5 product categories by GMV in 2018?",
+    "sql": "SELECT \n    oif.category_name_en as category,\n    SUM(oif.total_value) as gmv\nFROM order_item_facts oif\nJOIN order_facts of ON oif.order_id = of.order_id\nWHERE of.purchase_year = 2018\nGROUP BY oif.category_name_en\nORDER BY gmv DESC\nLIMIT 5",
+    "timestamp": "2025-11-13T00:19:51.818253"
+  },
+  {
+    "user_query": "What are the top 5 product categories by GMV in 2018?",
+    "sql": "SELECT \n    oif.category_name_en as category,\n    SUM(oif.total_value) as gmv\nFROM order_item_facts oif\nJOIN order_facts of ON oif.order_id = of.order_id\nWHERE of.purchase_year = 2018\nGROUP BY oif.category_name_en\nORDER BY gmv DESC\nLIMIT 5",
+    "timestamp": "2025-11-13T00:23:24.000663"
+  },
+  {
+    "user_query": "What are the top 5 product categories by GMV in 2018?",
+    "sql": "SELECT \n    oif.category_name_en as category,\n    SUM(oif.total_value) as gmv\nFROM order_item_facts oif\nJOIN order_facts of ON oif.order_id = of.order_id\nWHERE of.purchase_year = 2018\nGROUP BY oif.category_name_en\nORDER BY gmv DESC\nLIMIT 5",
+    "timestamp": "2025-11-13T00:25:02.809680"
+  },
+  {
+    "user_query": "\u0915\u0943\u092a\u092f\u093e \u092e\u0941\u091d\u0947 \u0907\u0932\u0947\u0915\u094d\u091f\u094d\u0930\u0949\u0928\u093f\u0915\u094d\u0938 \u0936\u094d\u0930\u0947\u0923\u0940 \u0915\u093e \u0915\u0941\u0932 GMV \u0926\u093f\u0916\u093e\u090f\u0901\u0964",
+    "sql": "SELECT \n    SUM(oif.total_value) as total_gmv\nFROM \n    order_item_facts oif\nJOIN \n    order_facts of ON oif.order_id = of.order_id\nWHERE \n    of.purchase_year = 2018\n    AND LOWER(oif.category_name_en) LIKE '%electronics%'",
+    "timestamp": "2025-11-13T00:27:00.127928"
+  },
+  {
+    "user_query": "how the proportion of total delivered orders across the payment types credthe gmv_card, boleto, and debthe gmv_card in 2018, and visualize the results as a pie chart",
+    "sql": "SELECT \n    of.payment_type,\n    COUNT(DISTINCT of.order_id) as delivered_orders,\n    ROUND(COUNT(DISTINCT of.order_id) * 100.0 / \n          (SELECT COUNT(DISTINCT order_id) FROM order_facts WHERE purchase_year = 2018 AND order_status = 'delivered'), 2) as proportion\nFROM order_facts of\nWHERE of.purchase_year = 2018 AND of.order_status = 'delivered'\nGROUP BY of.payment_type\nORDER BY proportion DESC",
+    "timestamp": "2025-11-13T00:28:41.001490"
+  },
+  {
+    "user_query": "What are the top 5 product categories by GMV in 2018?",
+    "sql": "SELECT \n    oif.category_name_en as category,\n    SUM(oif.total_value) as gmv\nFROM order_item_facts oif\nJOIN order_facts of ON oif.order_id = of.order_id\nWHERE of.purchase_year = 2018\nGROUP BY oif.category_name_en\nORDER BY gmv DESC\nLIMIT 5",
+    "timestamp": "2025-11-13T00:35:37.573679"
+  },
+  {
+    "user_query": "\u0915\u0943\u092a\u092f\u093e \u092e\u0941\u091d\u0947 \u0907\u0932\u0947\u0915\u094d\u091f\u094d\u0930\u0949\u0928\u093f\u0915\u094d\u0938 \u0936\u094d\u0930\u0947\u0923\u0940 \u0915\u093e \u0915\u0941\u0932 GMV \u0926\u093f\u0916\u093e\u090f\u0901\u0964",
+    "sql": "SELECT \n    SUM(oif.total_value) as total_gmv\nFROM \n    order_item_facts oif\nJOIN \n    order_facts of ON oif.order_id = of.order_id\nWHERE \n    of.purchase_year = 2018 AND \n    LOWER(oif.category_name_en) LIKE '%electronics%'",
+    "timestamp": "2025-11-13T00:36:03.890719"
+  },
+  {
+    "user_query": "What are the top 5 product categories by GMV in 2018?",
+    "sql": "SELECT \n    oif.category_name_en as category,\n    SUM(oif.total_value) as gmv\nFROM order_item_facts oif\nJOIN order_facts of ON oif.order_id = of.order_id\nWHERE of.purchase_year = 2018\nGROUP BY oif.category_name_en\nORDER BY gmv DESC\nLIMIT 5",
+    "timestamp": "2025-11-13T00:37:16.339474"
+  },
+  {
+    "user_query": "\u0915\u0943\u092a\u092f\u093e \u092e\u0941\u091d\u0947 \u0907\u0932\u0947\u0915\u094d\u091f\u094d\u0930\u0949\u0928\u093f\u0915\u094d\u0938 \u0936\u094d\u0930\u0947\u0923\u0940 \u0915\u093e \u0915\u0941\u0932 GMV \u0926\u093f\u0916\u093e\u090f\u0901\u0964",
+    "sql": "SELECT \n    SUM(oif.total_value) as total_gmv\nFROM \n    order_item_facts oif\nJOIN \n    order_facts of ON oif.order_id = of.order_id\nWHERE \n    of.purchase_year = 2018 AND \n    LOWER(oif.category_name_en) LIKE '%electronics%'",
+    "timestamp": "2025-11-13T00:38:23.407521"
+  },
+  {
+    "user_query": "how the proportion of total delivered orders across the payment types credthe gmv_card, boleto, and debthe gmv_card in 2018, and visualize the results as a pie chart",
+    "sql": "SELECT \n    of.payment_type,\n    COUNT(DISTINCT of.order_id) as delivered_orders,\n    ROUND(COUNT(DISTINCT of.order_id) * 100.0 / \n          (SELECT COUNT(DISTINCT order_id) \n           FROM order_facts \n           WHERE purchase_year = 2018 AND payment_type IN ('credit_card', 'boleto', 'debit_card')), 2) as proportion\nFROM order_facts of\nWHERE of.purchase_year = 2018 AND of.order_status = 'delivered' AND of.payment_type IN ('credit_card', 'boleto', 'debit_card')\nGROUP BY of.payment_type\nORDER BY proportion DESC",
+    "timestamp": "2025-11-13T00:39:34.057518"
+  },
+  {
+    "user_query": "What are the top 5 product categories by GMV in 2018?",
+    "sql": "SELECT \n    oif.category_name_en as category,\n    SUM(oif.total_value) as gmv\nFROM order_item_facts oif\nJOIN order_facts of ON oif.order_id = of.order_id\nWHERE of.purchase_year = 2018\nGROUP BY oif.category_name_en\nORDER BY gmv DESC\nLIMIT 5",
+    "timestamp": "2025-11-13T00:40:08.166342"
+  },
+  {
+    "user_query": "\u0915\u0943\u092a\u092f\u093e \u092e\u0941\u091d\u0947 \u0907\u0932\u0947\u0915\u094d\u091f\u094d\u0930\u0949\u0928\u093f\u0915\u094d\u0938 \u0936\u094d\u0930\u0947\u0923\u0940 \u0915\u093e \u0915\u0941\u0932 GMV \u0926\u093f\u0916\u093e\u090f\u0901\u0964",
+    "sql": "SELECT \n    SUM(oif.total_value) as total_gmv\nFROM \n    order_item_facts oif\nJOIN \n    order_facts of ON oif.order_id = of.order_id\nWHERE \n    of.purchase_year = 2018 AND \n    LOWER(oif.category_name_en) LIKE '%electronics%'",
+    "timestamp": "2025-11-13T00:40:21.270406"
+  },
+  {
+    "user_query": "Show the proportion of total delivered orders across the payment types credthe gmv_card, boleto, and debthe gmv_card in 2018, and visualize the results as a pie chart.",
+    "sql": "SELECT \n    of.payment_type,\n    COUNT(DISTINCT of.order_id) as delivered_orders,\n    ROUND(COUNT(DISTINCT of.order_id) * 100.0 / \n          (SELECT COUNT(DISTINCT order_id) \n           FROM order_facts \n           WHERE purchase_year = 2018 AND order_status = 'delivered'), 2) as proportion\nFROM order_facts of\nJOIN order_item_facts oif ON of.order_id = oif.order_id\nWHERE of.purchase_year = 2018 AND of.order_status = 'delivered' \n      AND oif.category_name_en = 'electronics'\nGROUP BY of.payment_type\nORDER BY proportion DESC",
+    "timestamp": "2025-11-13T00:41:15.263055"
   }
 ]

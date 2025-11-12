@@ -77,6 +77,16 @@ Open http://localhost:8501 🎉
 
 ---
 
+## 🎬 Demo Walkthrough
+
+Drop your demo or showcase video link here once it’s published:
+
+```
+https://youtu.be/your-demo-link
+```
+
+---
+
 ## 💬 Example Questions
 
 ### Olist Mode
@@ -301,6 +311,18 @@ python test_csv_mode.py
 
 ---
 
+## ▶️ Run the App Anytime
+
+Once dependencies are installed and your `.env` is configured, launch the Streamlit experience with:
+
+```bash
+streamlit run app/main.py
+```
+
+The UI will open at [http://localhost:8501](http://localhost:8501).
+
+---
+
 ## 🐛 Troubleshooting
 
 ### Import Errors
@@ -330,38 +352,11 @@ python scripts/build_duckdb.py
 
 ---
 
-## 🤝 Contributing
-
-Contributions welcome!
-
-1. Fork the repo
-2. Create feature branch (`git checkout -b feature/amazing`)
-3. Add tests for new functionality
-4. Commit changes (`git commit -m 'Add amazing feature'`)
-5. Push branch (`git push origin feature/amazing`)
-6. Open Pull Request
-
----
-
-## 📜 License
-
-MIT License - see LICENSE file
-
----
-
 ## 🙏 Acknowledgments
 
 - **Dataset:** [Olist Brazilian E-commerce](https://www.kaggle.com/datasets/olistbr/brazilian-ecommerce/)
 - **Built with:** Streamlit, DuckDB, Google Gemini, Groq, Plotly
 - **Inspired by:** Modern AI agent architectures
-
----
-
-## 📞 Support
-
-- 📖 **Documentation:** [ARCHITECTURE.md](ARCHITECTURE.md)
-- 🐛 **Issues:** [GitHub Issues](https://github.com/yourusername/olist-copilot/issues)
-- 💬 **Discussions:** [GitHub Discussions](https://github.com/yourusername/olist-copilot/discussions)
 
 ---
 

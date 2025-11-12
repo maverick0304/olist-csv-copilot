@@ -220,7 +220,7 @@ cols = st.columns(3)
 for idx, question in enumerate(example_questions):
     with cols[idx % 3]:
         if st.button(f"▸ {question[:40]}...", key=f"example_{idx}", use_container_width=True):
-            st.session_state.messages.append({"role": "user", "content": question})
+            st.session_state.messages.append({"role": "user", "content": question, "processed": False})
             st.rerun()
 
 st.divider()
@@ -273,12 +273,12 @@ with chat_container:
 # Handle chat input and pending queries
 prompt = None
 
-# Check for pending query from buttons
-if len(st.session_state.messages) > 0:
-    last_msg = st.session_state.messages[-1]
-    # If last message is user and no response yet
-    if last_msg["role"] == "user" and (len(st.session_state.messages) == 1 or st.session_state.messages[-2]["role"] == "user"):
-        prompt = last_msg["content"]
+# Find the most recent unprocessed user message
+for message in reversed(st.session_state.messages):
+    if message["role"] == "user" and not message.get("processed"):
+        prompt = message["content"]
+        message["processed"] = True
+        break
 
 # Process query if we have one
 if prompt:
@@ -390,7 +390,8 @@ if len(st.session_state.messages) > 0:
                 if st.button(f"▸ {question}", key=f"suggested_{last_message.get('timestamp')}_{i}", use_container_width=True):
                     st.session_state.messages.append({
                         "role": "user",
-                        "content": question
+                        "content": question,
+                        "processed": False
                     })
                     st.rerun()
 
@@ -400,7 +401,7 @@ new_prompt = st.chat_input("Ask a question about your e-commerce data...")
 
 # If new input from chat, add it to messages and rerun
 if new_prompt:
-    st.session_state.messages.append({"role": "user", "content": new_prompt})
+    st.session_state.messages.append({"role": "user", "content": new_prompt, "processed": False})
     st.rerun()
 
 # Footer
