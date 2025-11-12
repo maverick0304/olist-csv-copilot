@@ -4,10 +4,10 @@ A production-ready GenAI agentic system for natural-language analytics. Ask ques
 
 ## 🎬 Walkthrough
 
-Video link: https://drive.google.com/drive/folders/1K3GFHg33HvE-udz3jVCpZYD67yr9skao?usp=sharing
+Video link: 
 
 ```
-https://youtu.be/your-demo-link
+https://drive.google.com/drive/folders/1K3GFHg33HvE-udz3jVCpZYD67yr9skao?usp=sharing
 ```
 
 ## ✨ Features
