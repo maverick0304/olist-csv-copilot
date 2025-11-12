@@ -352,6 +352,21 @@ python scripts/build_duckdb.py
 
 ---
 
+## 🚀 Future Enhancements
+
+If I had more time, here's what I would add:
+
+- **Vector Search** - Embed schema descriptions for semantic column matching
+- **Multi-Modal Charts** - Scatter plots, heatmaps, geographic visualizations
+- **Query History & Bookmarks** - Save favorite queries and share with team
+- **Scheduled Reports** - Recurring analytics with email/Slack delivery
+- **Real-Time Data Pipeline** - Streaming ingestion for live dashboards
+- **Multi-User Authentication** - Role-based access and query audit logs
+- **Advanced Anomaly Detection** - Statistical outlier detection in time series
+- **Natural Language Explanations** - LLM-generated insights on trends and patterns
+
+---
+
 ## 🙏 Acknowledgments
 
 - **Dataset:** [Olist Brazilian E-commerce](https://www.kaggle.com/datasets/olistbr/brazilian-ecommerce/)
