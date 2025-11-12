@@ -1,0 +1,338 @@
+# Olist E-commerce Semantic Metrics
+# Canonical metric definitions with SQL templates and business logic
+
+metrics:
+  gmv:
+    name: "Gross Merchandise Value"
+    description: "Total value of all products sold including freight (price + freight)"
+    formula: "SUM(price + freight_value)"
+    grain: "order, category, seller, time period"
+    time_window: "all time"
+    required_tables:
+      - order_item_facts
+    aliases:
+      - "gross merchandise value"
+      - "total revenue"
+      - "sales"
+    sql_template: |
+      SELECT 
+        SUM(total_value) as gmv
+      FROM order_item_facts
+      {where_clause}
+    example: "What was the GMV for Electronics in Q4 2017?"
+  
+  aov:
+    name: "Average Order Value"
+    description: "Average total value per order"
+    formula: "Total GMV / Number of Orders"
+    grain: "category, seller, customer segment, time period"
+    time_window: "all time"
+    required_tables:
+      - order_summary
+    aliases:
+      - "average order value"
+      - "avg order value"
+      - "mean order value"
+    sql_template: |
+      SELECT 
+        AVG(order_gmv) as aov,
+        COUNT(DISTINCT order_id) as order_count,
+        SUM(order_gmv) as total_gmv
+      FROM order_summary
+      {where_clause}
+    example: "What's the average order value by quarter?"
+  
+  repeat_rate:
+    name: "Customer Repeat Rate"
+    description: "Percentage of customers who made more than one purchase"
+    formula: "(Customers with >1 order / Total customers) * 100"
+    grain: "customer segment, time period"
+    time_window: "all time"
+    required_tables:
+      - order_summary
+    aliases:
+      - "repeat purchase rate"
+      - "customer retention"
+      - "returning customer rate"
+    sql_template: |
+      WITH customer_orders AS (
+        SELECT 
+          customer_id,
+          COUNT(DISTINCT order_id) as order_count
+        FROM order_summary
+        {where_clause}
+        GROUP BY customer_id
+      )
+      SELECT 
+        COUNT(CASE WHEN order_count > 1 THEN 1 END) * 100.0 / COUNT(*) as repeat_rate,
+        COUNT(CASE WHEN order_count > 1 THEN 1 END) as repeat_customers,
+        COUNT(*) as total_customers
+      FROM customer_orders
+    example: "What's the customer repeat purchase rate?"
+  
+  on_time_delivery_rate:
+    name: "On-Time Delivery Rate"
+    description: "Percentage of orders delivered by or before estimated delivery date"
+    formula: "(Orders delivered on time / Total delivered orders) * 100"
+    grain: "seller, state, time period"
+    time_window: "all time"
+    required_tables:
+      - order_summary
+    aliases:
+      - "on time rate"
+      - "delivery performance"
+      - "timely delivery rate"
+    sql_template: |
+      SELECT 
+        COUNT(CASE WHEN is_on_time = true THEN 1 END) * 100.0 / COUNT(*) as on_time_rate,
+        COUNT(CASE WHEN is_on_time = true THEN 1 END) as on_time_orders,
+        COUNT(*) as total_delivered_orders,
+        AVG(delivery_days_delta) as avg_days_early
+      FROM order_summary
+      WHERE delivered_ts IS NOT NULL
+      {and_where_clause}
+    example: "What's the on-time delivery rate by seller in 2018?"
+  
+  late_delivery_rate:
+    name: "Late Delivery Rate"
+    description: "Percentage of orders delivered after estimated delivery date"
+    formula: "(Orders delivered late / Total delivered orders) * 100"
+    grain: "seller, state, time period"
+    time_window: "all time"
+    required_tables:
+      - order_summary
+    aliases:
+      - "late rate"
+      - "delayed delivery rate"
+      - "overdue rate"
+    sql_template: |
+      SELECT 
+        COUNT(CASE WHEN is_on_time = false THEN 1 END) * 100.0 / COUNT(*) as late_rate,
+        COUNT(CASE WHEN is_on_time = false THEN 1 END) as late_orders,
+        COUNT(*) as total_delivered_orders,
+        AVG(CASE WHEN is_on_time = false THEN -delivery_days_delta END) as avg_days_late
+      FROM order_summary
+      WHERE delivered_ts IS NOT NULL
+      {and_where_clause}
+    example: "Show late delivery rate by seller (top 10 worst performers)"
+  
+  avg_review_score:
+    name: "Average Review Score"
+    description: "Mean customer review score (1-5 scale)"
+    formula: "AVG(review_score)"
+    grain: "product, category, seller, time period"
+    time_window: "all time"
+    required_tables:
+      - order_summary
+    aliases:
+      - "average rating"
+      - "customer satisfaction"
+      - "review rating"
+    sql_template: |
+      SELECT 
+        AVG(review_score) as avg_review_score,
+        COUNT(CASE WHEN review_score >= 4 THEN 1 END) * 100.0 / COUNT(*) as positive_rate,
+        COUNT(*) as review_count
+      FROM order_summary
+      WHERE review_score > 0
+      {and_where_clause}
+    example: "What's the average review score by product category?"
+  
+  cart_abandonment_rate:
+    name: "Cart Abandonment Rate"
+    description: "Percentage of orders that were not approved/completed"
+    formula: "(Unapproved orders / Total orders) * 100"
+    grain: "time period"
+    time_window: "all time"
+    required_tables:
+      - order_summary
+    aliases:
+      - "abandonment rate"
+      - "incomplete order rate"
+    sql_template: |
+      SELECT 
+        COUNT(CASE WHEN order_status != 'delivered' THEN 1 END) * 100.0 / COUNT(*) as abandonment_rate,
+        COUNT(CASE WHEN order_status != 'delivered' THEN 1 END) as abandoned_orders,
+        COUNT(*) as total_orders
+      FROM order_summary
+      {where_clause}
+    example: "What's the cart abandonment rate by month?"
+  
+  category_penetration:
+    name: "Category Penetration"
+    description: "Percentage of customers who purchased from a specific category"
+    formula: "(Customers who bought category / Total customers) * 100"
+    grain: "category"
+    time_window: "all time"
+    required_tables:
+      - order_summary
+      - order_item_facts
+    aliases:
+      - "category reach"
+      - "category adoption"
+    sql_template: |
+      WITH category_customers AS (
+        SELECT DISTINCT
+          os.customer_id,
+          oif.category_name_en
+        FROM order_summary os
+        JOIN order_item_facts oif ON os.order_id = oif.order_id
+        {where_clause}
+      ),
+      total_customers AS (
+        SELECT COUNT(DISTINCT customer_id) as total
+        FROM order_summary
+        {where_clause}
+      )
+      SELECT 
+        category_name_en as category,
+        COUNT(DISTINCT customer_id) as customers,
+        (SELECT total FROM total_customers) as total_customers,
+        COUNT(DISTINCT customer_id) * 100.0 / (SELECT total FROM total_customers) as penetration_rate
+      FROM category_customers
+      GROUP BY category_name_en
+      ORDER BY penetration_rate DESC
+    example: "Which categories have the highest customer penetration?"
+  
+  avg_items_per_order:
+    name: "Average Items Per Order"
+    description: "Mean number of items in each order"
+    formula: "Total items / Total orders"
+    grain: "category, time period"
+    time_window: "all time"
+    required_tables:
+      - order_summary
+    aliases:
+      - "basket size"
+      - "items per basket"
+      - "order size"
+    sql_template: |
+      SELECT 
+        AVG(item_count) as avg_items_per_order,
+        SUM(item_count) as total_items,
+        COUNT(*) as total_orders
+      FROM order_summary
+      {where_clause}
+    example: "What's the average basket size by quarter?"
+  
+  payment_method_distribution:
+    name: "Payment Method Distribution"
+    description: "Breakdown of orders by payment type"
+    formula: "COUNT by payment_type"
+    grain: "payment method"
+    time_window: "all time"
+    required_tables:
+      - order_summary
+    aliases:
+      - "payment mix"
+      - "payment breakdown"
+    sql_template: |
+      SELECT 
+        payment_type,
+        COUNT(*) as order_count,
+        COUNT(*) * 100.0 / SUM(COUNT(*)) OVER () as percentage,
+        SUM(order_gmv) as total_value,
+        AVG(order_gmv) as avg_order_value
+      FROM order_summary
+      {where_clause}
+      GROUP BY payment_type
+      ORDER BY order_count DESC
+    example: "Show payment method distribution"
+  
+  seller_performance_score:
+    name: "Seller Performance Score"
+    description: "Composite score based on on-time delivery rate and review scores"
+    formula: "(On-time rate * 0.6) + (Avg review score / 5 * 100 * 0.4)"
+    grain: "seller"
+    time_window: "all time"
+    required_tables:
+      - order_summary
+      - order_item_facts
+    aliases:
+      - "seller rating"
+      - "seller quality score"
+    sql_template: |
+      WITH seller_metrics AS (
+        SELECT 
+          oif.seller_id,
+          oif.seller_city,
+          oif.seller_state,
+          COUNT(DISTINCT os.order_id) as total_orders,
+          COUNT(CASE WHEN os.is_on_time = true THEN 1 END) * 100.0 / 
+            COUNT(CASE WHEN os.delivered_ts IS NOT NULL THEN 1 END) as on_time_rate,
+          AVG(os.review_score) as avg_review,
+          SUM(oif.total_value) as total_gmv
+        FROM order_summary os
+        JOIN order_item_facts oif ON os.order_id = oif.order_id
+        WHERE os.delivered_ts IS NOT NULL
+        {and_where_clause}
+        GROUP BY oif.seller_id, oif.seller_city, oif.seller_state
+      )
+      SELECT 
+        seller_id,
+        seller_city,
+        seller_state,
+        total_orders,
+        ROUND(on_time_rate, 2) as on_time_rate,
+        ROUND(avg_review, 2) as avg_review,
+        ROUND(total_gmv, 2) as total_gmv,
+        ROUND(
+          (COALESCE(on_time_rate, 0) * 0.6) + 
+          (COALESCE(avg_review, 0) / 5 * 100 * 0.4),
+          2
+        ) as performance_score
+      FROM seller_metrics
+      WHERE total_orders >= 5
+      ORDER BY performance_score DESC
+    example: "Who are the top performing sellers?"
+  
+  revenue_by_category:
+    name: "Revenue by Category"
+    description: "Total GMV broken down by product category"
+    formula: "SUM(total_value) GROUP BY category"
+    grain: "category"
+    time_window: "all time"
+    required_tables:
+      - order_item_facts
+    aliases:
+      - "category revenue"
+      - "sales by category"
+    sql_template: |
+      SELECT 
+        category_name_en as category,
+        COUNT(DISTINCT order_id) as order_count,
+        SUM(total_value) as gmv,
+        AVG(total_value) as avg_item_value,
+        SUM(total_value) * 100.0 / SUM(SUM(total_value)) OVER () as percentage
+      FROM order_item_facts
+      {where_clause}
+      GROUP BY category_name_en
+      ORDER BY gmv DESC
+    example: "Show top 10 categories by revenue in 2018"
+  
+  monthly_active_customers:
+    name: "Monthly Active Customers"
+    description: "Number of unique customers who made a purchase in each month"
+    formula: "COUNT(DISTINCT customer_id) by month"
+    grain: "month"
+    time_window: "monthly"
+    required_tables:
+      - order_summary
+    aliases:
+      - "active customers"
+      - "mau"
+      - "unique customers"
+    sql_template: |
+      SELECT 
+        purchase_year,
+        purchase_month,
+        COUNT(DISTINCT customer_id) as active_customers,
+        COUNT(DISTINCT order_id) as orders,
+        SUM(order_gmv) as gmv
+      FROM order_summary
+      {where_clause}
+      GROUP BY purchase_year, purchase_month
+      ORDER BY purchase_year, purchase_month
+    example: "Show monthly active customers trend"
+
+

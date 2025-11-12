@@ -1,0 +1,256 @@
+# COMPLETE DATABASE SCHEMA WITH ALL FIELDS
+
+## ORIGINAL DATA MODEL (CSV Files)
+
+### customers.csv
+```
+customer_id                     VARCHAR(32)  PK - Unique customer identifier per order
+customer_unique_id              VARCHAR(32)  - Real customer ID (same person across orders)
+customer_zip_code_prefix        VARCHAR(5)   - First 5 digits of zip code
+customer_city                   VARCHAR(50)  - Customer's city
+customer_state                  CHAR(2)      - Customer's state (SP, RJ, MG, etc.)
+```
+
+### orders.csv
+```
+order_id                        VARCHAR(32)  PK - Unique order identifier
+customer_id                     VARCHAR(32)  FK→customers.customer_id
+order_status                    VARCHAR(20)  - delivered, shipped, canceled, etc.
+order_purchase_timestamp        TIMESTAMP    - When order was placed
+order_approved_at               TIMESTAMP    - When payment was approved
+order_delivered_carrier_date    TIMESTAMP    - When handed to carrier
+order_delivered_customer_date   TIMESTAMP    - When delivered to customer
+order_estimated_delivery_date   TIMESTAMP    - Estimated delivery date
+```
+
+### order_items.csv
+```
+order_id                        VARCHAR(32)  FK→orders.order_id
+order_item_id                   INTEGER      - Item sequence number (1, 2, 3...)
+product_id                      VARCHAR(32)  FK→products.product_id
+seller_id                       VARCHAR(32)  FK→sellers.seller_id
+shipping_limit_date             TIMESTAMP    - Seller shipping deadline
+price                           DECIMAL      - Item price (excluding freight)
+freight_value                   DECIMAL      - Shipping cost for this item
+```
+
+### order_payments.csv
+```
+order_id                        VARCHAR(32)  FK→orders.order_id
+payment_sequential              INTEGER      - Payment sequence (for installments)
+payment_type                    VARCHAR(20)  - credit_card, boleto, voucher, debit_card
+payment_installments            INTEGER      - Number of installments
+payment_value                   DECIMAL      - Payment amount
+```
+**IMPORTANT:** One order can have MULTIPLE payment records!
+
+### order_reviews.csv
+```
+review_id                       VARCHAR(32)  PK
+order_id                        VARCHAR(32)  FK→orders.order_id
+review_score                    INTEGER      - 1 to 5 stars
+review_comment_title            TEXT         - Review title
+review_comment_message          TEXT         - Review text
+review_creation_date            TIMESTAMP    - When review was written
+review_answer_timestamp         TIMESTAMP    - When seller responded
+```
+
+### products.csv
+```
+product_id                      VARCHAR(32)  PK
+product_category_name           VARCHAR(50)  - Category name in Portuguese
+product_name_lenght             INTEGER      - Length of product name
+product_description_lenght      INTEGER      - Length of description
+product_photos_qty              INTEGER      - Number of photos
+product_weight_g                INTEGER      - Weight in grams
+product_length_cm               DECIMAL      - Length in cm
+product_height_cm               DECIMAL      - Height in cm
+product_width_cm                DECIMAL      - Width in cm
+```
+
+### sellers.csv
+```
+seller_id                       VARCHAR(32)  PK
+seller_zip_code_prefix          VARCHAR(5)   - First 5 digits of zip code
+seller_city                     VARCHAR(50)  - Seller's city
+seller_state                    CHAR(2)      - Seller's state
+```
+
+### product_category_name_translation.csv
+```
+product_category_name           VARCHAR(50)  PK - Portuguese category name
+product_category_name_english   VARCHAR(50)  - English translation
+```
+
+---
+
+## ANALYTICAL VIEWS (WHAT YOU SHOULD QUERY)
+
+### VIEW: order_facts
+**Purpose:** Order-level data with aggregated payments and reviews
+**Built from:** raw_orders + raw_payments (aggregated) + raw_reviews
+
+```sql
+order_id                        VARCHAR(32)  PK
+customer_id                     VARCHAR(32)  FK→customer_dim.customer_id
+order_status                    VARCHAR(20)
+purchase_ts                     TIMESTAMP    - Order purchase timestamp
+approved_ts                     TIMESTAMP    - Payment approval timestamp
+carrier_ts                      TIMESTAMP    - Handed to carrier timestamp
+delivered_ts                    TIMESTAMP    - Delivered to customer timestamp
+estimated_delivery_ts           TIMESTAMP    - Estimated delivery timestamp
+payment_value                   DECIMAL      - ✨ SUM of all payments for order
+payment_type                    VARCHAR(20)  - Primary payment type
+payment_installments            INTEGER      - Number of installments
+review_score                    INTEGER      - Review score (1-5)
+review_comment_message          TEXT         - Review text
+purchase_year                   INTEGER      - ✨ DERIVED: YEAR(purchase_ts)
+purchase_quarter                INTEGER      - ✨ DERIVED: QUARTER(purchase_ts) [1-4]
+purchase_month                  INTEGER      - ✨ DERIVED: MONTH(purchase_ts) [1-12]
+purchase_dayofweek              INTEGER      - ✨ DERIVED: DAYOFWEEK(purchase_ts) [1-7]
+is_on_time                      BOOLEAN      - ✨ DERIVED: delivered <= estimated
+delivery_days_delta             INTEGER      - ✨ DERIVED: days early(+)/late(-)
+```
+
+**Relationships:**
+- `order_id` → Joins with order_item_facts.order_id (1-to-many)
+- `customer_id` → Joins with customer_dim.customer_id (many-to-1)
+
+---
+
+### VIEW: order_item_facts
+**Purpose:** Line item details with enriched product/seller information
+**Built from:** raw_order_items + raw_products + raw_category_translation + raw_sellers
+
+```sql
+order_id                        VARCHAR(32)  FK→order_facts.order_id
+order_item_id                   INTEGER      - Item sequence
+product_id                      VARCHAR(32)  FK→product_dim.product_id
+seller_id                       VARCHAR(32)  FK→seller_dim.seller_id
+price                           DECIMAL      - Item price (excluding freight)
+freight_value                   DECIMAL      - Shipping cost
+total_value                     DECIMAL      - ✨ DERIVED: price + freight_value
+product_category_name           VARCHAR(50)  - Portuguese category name
+category_name_en                VARCHAR(50)  - ✨ English category name (USE THIS!)
+product_name_length             INTEGER      - Product name length
+product_description_length      INTEGER      - Description length
+product_photos_qty              INTEGER      - Number of photos
+product_weight_g                INTEGER      - Weight in grams
+product_length_cm               DECIMAL      - Length
+product_height_cm               DECIMAL      - Height
+product_width_cm                DECIMAL      - Width
+seller_city                     VARCHAR(50)  - ✨ Seller's city
+seller_state                    CHAR(2)      - ✨ Seller's state
+```
+
+**Relationships:**
+- `order_id` → Joins with order_facts.order_id (many-to-1)
+- `product_id` → Joins with product_dim.product_id (many-to-1)
+- `seller_id` → Joins with seller_dim.seller_id (many-to-1)
+
+**IMPORTANT:** This view has NO date columns! Must JOIN with order_facts for time filtering.
+
+---
+
+### VIEW: order_summary
+**Purpose:** Pre-aggregated order metrics (FASTEST for order-level queries)
+**Built from:** order_facts + customer_dim + order_item_facts (aggregated)
+
+```sql
+-- All columns from order_facts, PLUS:
+customer_city                   VARCHAR(50)  - ✨ Customer's city
+customer_state                  CHAR(2)      - ✨ Customer's state
+customer_zip_code_prefix        VARCHAR(5)   - ✨ Customer's zip
+order_gmv                       DECIMAL      - ✨ DERIVED: SUM(item total_values)
+item_count                      INTEGER      - ✨ DERIVED: Number of items in order
+unique_products                 INTEGER      - ✨ DERIVED: Distinct products
+unique_sellers                  INTEGER      - ✨ DERIVED: Distinct sellers
+categories                      TEXT         - ✨ DERIVED: Comma-separated category list
+```
+
+**Use when:** Order-level analysis WITHOUT item breakdown (much faster!)
+
+**Relationships:**
+- `order_id` → Joins with order_item_facts.order_id (1-to-many, if breakdown needed)
+- `customer_id` → Joins with customer_dim.customer_id (many-to-1)
+
+---
+
+### VIEW: customer_dim
+**Purpose:** Customer master data
+
+```sql
+customer_id                     VARCHAR(32)  PK
+customer_unique_id              VARCHAR(32)  - Real customer (same across orders)
+customer_zip_code_prefix        VARCHAR(5)
+customer_city                   VARCHAR(50)
+customer_state                  CHAR(2)
+```
+
+---
+
+### VIEW: seller_dim
+**Purpose:** Seller master data
+
+```sql
+seller_id                       VARCHAR(32)  PK
+seller_zip_code_prefix          VARCHAR(5)
+seller_city                     VARCHAR(50)
+seller_state                    CHAR(2)
+```
+
+---
+
+### VIEW: product_dim
+**Purpose:** Product catalog with calculated metrics
+
+```sql
+product_id                      VARCHAR(32)  PK
+product_category_name           VARCHAR(50)  - Portuguese
+category_name_en                VARCHAR(50)  - English (USE THIS!)
+product_name_length             INTEGER
+product_description_length      INTEGER
+product_photos_qty              INTEGER
+product_weight_g                INTEGER
+product_length_cm               DECIMAL
+product_height_cm               DECIMAL
+product_width_cm                DECIMAL
+volume_cubic_cm                 DECIMAL      - ✨ DERIVED: weight * l * h * w / 1000000
+```
+
+---
+
+## COMPLETE RELATIONSHIP MAP
+
+```
+order_summary (1) ←→ (M) order_item_facts
+    ↓ order_id             ↓ order_id
+
+order_facts (1) ←→ (M) order_item_facts
+    ↓ order_id         ↓ order_id
+
+order_summary ←→ customer_dim
+    ↓ customer_id    ↑ customer_id
+    (many-to-1)
+
+order_item_facts ←→ seller_dim
+    ↓ seller_id      ↑ seller_id
+    (many-to-1)
+
+order_item_facts ←→ product_dim
+    ↓ product_id     ↑ product_id
+    (many-to-1)
+```
+
+## FIELD COUNT SUMMARY
+- order_facts: 18 fields
+- order_item_facts: 18 fields
+- order_summary: 32 fields (includes all from order_facts + aggregations)
+- customer_dim: 5 fields
+- seller_dim: 4 fields
+- product_dim: 10 fields
+
+**Total: 87 fields available for querying**
+
+
+

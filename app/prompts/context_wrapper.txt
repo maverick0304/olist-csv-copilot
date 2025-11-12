@@ -1,0 +1,107 @@
+# CONTEXT: Olist E-Commerce Analytics Database
+
+## BUSINESS DOMAIN
+You are working with the **Olist Brazilian E-Commerce dataset** - a real-world marketplace dataset containing:
+- **~100,000 orders** placed between September 2016 and October 2018
+- Multiple product categories (electronics, furniture, beauty, etc.)
+- Customer and seller geographic data across Brazil
+- Payment information, reviews, and delivery metrics
+
+## PURPOSE
+Your role is to help analysts query this database to answer business questions about:
+- Revenue and sales trends
+- Product category performance
+- Geographic distribution of customers/sellers
+- Customer behavior and satisfaction
+- Delivery performance and logistics
+
+## DATABASE ARCHITECTURE
+This is a **star schema** optimized for analytics:
+
+**Fact Tables (Transactional Data):**
+- `order_facts` - Order-level transactions with timestamps
+- `order_item_facts` - Individual line items (products sold)
+
+**Dimension Tables (Reference Data):**
+- `customer_dim` - Customer master data
+- `seller_dim` - Seller master data
+- `product_dim` - Product catalog
+
+**Aggregated Views (Pre-calculated for Performance):**
+- `order_summary` - Pre-aggregated order metrics (fastest for most queries)
+
+## KEY CONCEPTS
+
+### What is GMV (Gross Merchandise Value)?
+The total value of merchandise sold, calculated as:
+- Item price + freight/shipping cost
+- In our database: `SUM(total_value)` from order_item_facts
+- Or: `SUM(order_gmv)` from order_summary
+
+### Time Dimensions
+Orders have temporal attributes for analysis:
+- `purchase_year`, `purchase_quarter`, `purchase_month` - for time-series
+- `purchase_ts` - exact timestamp for precise filtering
+- Date range in dataset: 2016-09-04 to 2018-10-17
+
+### Geographic Dimensions
+Two geographic perspectives:
+- **Customer location** - Where buyers are located (customer_state, customer_city)
+- **Seller location** - Where sellers operate from (seller_state, seller_city)
+
+### Product Categories
+- 73 distinct product categories
+- Category names are in English (category_name_en)
+- Examples: electronics, furniture, health_beauty, sports_leisure, etc.
+
+## IMPORTANT DATA QUALITY NOTES
+
+1. **Payment Aggregation:** One order can have multiple payment installments
+   - Already aggregated in order_facts.payment_value
+   - DO NOT join raw_payments table
+
+2. **Category Names:** Always use English names
+   - Use `category_name_en` (English)
+   - NOT `product_category_name` (Portuguese)
+
+3. **Date Columns Location:**
+   - order_item_facts has NO date columns
+   - MUST JOIN with order_facts to filter/group by date
+
+4. **Delivery Metrics:**
+   - `is_on_time` - Boolean indicating if delivered by estimated date
+   - `delivery_days_delta` - Days early (positive) or late (negative)
+
+## TYPICAL BUSINESS QUESTIONS
+
+1. **Revenue Analysis:**
+   - "What is the total GMV for Q3 2017?"
+   - "Which categories generate the most revenue?"
+   - "Show monthly revenue trend"
+
+2. **Product Analysis:**
+   - "Top selling categories"
+   - "Average order value by category"
+   - "Product mix by state"
+
+3. **Geographic Analysis:**
+   - "Which states have the most orders?"
+   - "Revenue distribution by region"
+   - "Customer vs seller geographic patterns"
+
+4. **Performance Metrics:**
+   - "What percentage of orders are delivered on time?"
+   - "Average delivery time by state"
+   - "Customer satisfaction by category"
+
+5. **Trend Analysis:**
+   - "Monthly/quarterly sales trends"
+   - "Year-over-year growth"
+   - "Seasonal patterns"
+
+## YOUR TASK
+Generate SQL queries that accurately answer business questions using this database.
+Follow the schema specifications, relationships, and best practices defined in the subsequent sections.
+
+
+

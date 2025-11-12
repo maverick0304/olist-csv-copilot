@@ -1,0 +1,142 @@
+{
+  "few_shots": [
+    {
+      "id": 1,
+      "user_query": "What are the top 5 product categories by GMV in 2018?",
+      "reasoning": "User wants top categories ranked by total revenue (GMV) for year 2018. Need to filter by year, group by category, sum total value, order descending, limit 5.",
+      "sql": "SELECT category_name_en as category, SUM(total_value) as gmv, COUNT(DISTINCT order_id) as orders FROM order_item_facts oif JOIN order_facts of ON oif.order_id = of.order_id WHERE YEAR(of.purchase_ts) = 2018 GROUP BY category_name_en ORDER BY gmv DESC LIMIT 5",
+      "result_shape": "5 rows × 3 columns (category, gmv, orders)",
+      "chart_type": "bar",
+      "chart_config": {
+        "x": "category",
+        "y": "gmv",
+        "title": "Top 5 Categories by GMV in 2018"
+      },
+      "insight": "The top category in 2018 was [CATEGORY] with $[X] in GMV from [Y] orders, accounting for [Z]% of total revenue."
+    },
+    {
+      "id": 2,
+      "user_query": "Show me average order value by quarter",
+      "reasoning": "Calculate AOV (average order value) grouped by year and quarter. Use order_summary for pre-aggregated order totals.",
+      "sql": "SELECT purchase_year, purchase_quarter, ROUND(AVG(order_gmv), 2) as aov, COUNT(DISTINCT order_id) as order_count FROM order_summary GROUP BY purchase_year, purchase_quarter ORDER BY purchase_year, purchase_quarter",
+      "result_shape": "~9 rows × 4 columns (year, quarter, aov, order_count)",
+      "chart_type": "line",
+      "chart_config": {
+        "x": "purchase_quarter",
+        "y": "aov",
+        "title": "Average Order Value by Quarter"
+      },
+      "insight": "AOV ranged from $[MIN] to $[MAX] across quarters, with the highest in Q[X] [YEAR] at $[Y], representing a [Z]% increase from the prior quarter."
+    },
+    {
+      "id": 3,
+      "user_query": "Which sellers have the worst on-time delivery rate?",
+      "reasoning": "Calculate on-time delivery rate by seller, filter for delivered orders only, rank ascending (worst first), limit to bottom 10.",
+      "sql": "SELECT oif.seller_id, oif.seller_state, COUNT(DISTINCT os.order_id) as total_orders, COUNT(CASE WHEN os.is_on_time = true THEN 1 END) as on_time_orders, ROUND(COUNT(CASE WHEN os.is_on_time = true THEN 1 END) * 100.0 / COUNT(*), 2) as on_time_rate FROM order_summary os JOIN order_item_facts oif ON os.order_id = oif.order_id WHERE os.delivered_ts IS NOT NULL GROUP BY oif.seller_id, oif.seller_state HAVING COUNT(DISTINCT os.order_id) >= 10 ORDER BY on_time_rate ASC LIMIT 10",
+      "result_shape": "10 rows × 5 columns (seller_id, state, total_orders, on_time_orders, on_time_rate)",
+      "chart_type": "bar",
+      "chart_config": {
+        "x": "seller_id",
+        "y": "on_time_rate",
+        "title": "Sellers with Lowest On-Time Delivery Rate"
+      },
+      "insight": "The seller with the worst delivery performance is [SELLER_ID] with only [X]% on-time rate across [Y] orders. The average across bottom 10 is [Z]%."
+    },
+    {
+      "id": 4,
+      "user_query": "Revenue trend by month for the Electronics category",
+      "reasoning": "Time series of monthly GMV filtered to Electronics category. Need to join order items with order facts for date filtering.",
+      "sql": "SELECT of.purchase_year, of.purchase_month, ROUND(SUM(oif.total_value), 2) as monthly_revenue, COUNT(DISTINCT oif.order_id) as orders FROM order_item_facts oif JOIN order_facts of ON oif.order_id = of.order_id WHERE LOWER(oif.category_name_en) LIKE '%electro%' GROUP BY of.purchase_year, of.purchase_month ORDER BY of.purchase_year, of.purchase_month",
+      "result_shape": "~25 rows × 4 columns (year, month, revenue, orders)",
+      "chart_type": "line",
+      "chart_config": {
+        "x": "purchase_month",
+        "y": "monthly_revenue",
+        "title": "Electronics Revenue Trend by Month"
+      },
+      "insight": "Electronics revenue peaked in [MONTH] [YEAR] at $[X], showing [growth/decline] trend overall with an average monthly revenue of $[Y]."
+    },
+    {
+      "id": 5,
+      "user_query": "What's the customer repeat purchase rate?",
+      "reasoning": "Calculate percentage of customers who made more than 1 order. Need to count customers by order frequency.",
+      "sql": "WITH customer_order_counts AS (SELECT customer_id, COUNT(DISTINCT order_id) as order_count FROM order_summary GROUP BY customer_id) SELECT COUNT(CASE WHEN order_count > 1 THEN 1 END) as repeat_customers, COUNT(*) as total_customers, ROUND(COUNT(CASE WHEN order_count > 1 THEN 1 END) * 100.0 / COUNT(*), 2) as repeat_rate FROM customer_order_counts",
+      "result_shape": "1 row × 3 columns (repeat_customers, total_customers, repeat_rate)",
+      "chart_type": "none",
+      "chart_config": {},
+      "insight": "Out of [TOTAL] customers, [REPEAT] made repeat purchases, resulting in a [X]% repeat rate. This suggests [high/low/moderate] customer retention."
+    },
+    {
+      "id": 6,
+      "user_query": "Compare payment methods by average transaction value",
+      "reasoning": "Group by payment type, calculate average order value and count for each method.",
+      "sql": "SELECT payment_type, COUNT(DISTINCT order_id) as order_count, ROUND(AVG(order_gmv), 2) as avg_transaction_value, ROUND(SUM(order_gmv), 2) as total_value FROM order_summary WHERE payment_type IS NOT NULL GROUP BY payment_type ORDER BY avg_transaction_value DESC",
+      "result_shape": "~5 rows × 4 columns (payment_type, order_count, avg_value, total_value)",
+      "chart_type": "bar",
+      "chart_config": {
+        "x": "payment_type",
+        "y": "avg_transaction_value",
+        "title": "Average Transaction Value by Payment Method"
+      },
+      "insight": "[PAYMENT_TYPE] has the highest average transaction value at $[X], while [OTHER_TYPE] is most popular with [Y] orders totaling $[Z]."
+    },
+    {
+      "id": 7,
+      "user_query": "Late delivery rate by seller in 2018 Q3, show top 10",
+      "reasoning": "Calculate late delivery percentage by seller for specific time period. Filter to Q3 2018, delivered orders only, rank by worst performance.",
+      "sql": "SELECT oif.seller_id, oif.seller_city, oif.seller_state, COUNT(DISTINCT os.order_id) as total_deliveries, COUNT(CASE WHEN os.is_on_time = false THEN 1 END) as late_deliveries, ROUND(COUNT(CASE WHEN os.is_on_time = false THEN 1 END) * 100.0 / COUNT(*), 2) as late_rate FROM order_summary os JOIN order_item_facts oif ON os.order_id = oif.order_id WHERE os.delivered_ts IS NOT NULL AND os.purchase_year = 2018 AND os.purchase_quarter = 3 GROUP BY oif.seller_id, oif.seller_city, oif.seller_state HAVING COUNT(DISTINCT os.order_id) >= 5 ORDER BY late_rate DESC LIMIT 10",
+      "result_shape": "10 rows × 6 columns (seller_id, city, state, total, late_count, late_rate)",
+      "chart_type": "bar",
+      "chart_config": {
+        "x": "seller_id",
+        "y": "late_rate",
+        "title": "Top 10 Sellers by Late Delivery Rate (2018 Q3)"
+      },
+      "insight": "In Q3 2018, seller [ID] had the worst late delivery rate at [X]%, with [Y] out of [Z] orders delivered late. Average late rate across these sellers was [W]%."
+    },
+    {
+      "id": 8,
+      "user_query": "How many orders were placed each month in 2017?",
+      "reasoning": "Simple time series of order counts by month for 2017. Use order_summary aggregated by month.",
+      "sql": "SELECT purchase_year, purchase_month, COUNT(DISTINCT order_id) as order_count, ROUND(SUM(order_gmv), 2) as total_gmv FROM order_summary WHERE purchase_year = 2017 GROUP BY purchase_year, purchase_month ORDER BY purchase_month",
+      "result_shape": "12 rows × 4 columns (year, month, orders, gmv)",
+      "chart_type": "line",
+      "chart_config": {
+        "x": "purchase_month",
+        "y": "order_count",
+        "title": "Monthly Order Volume in 2017"
+      },
+      "insight": "2017 saw [TOTAL] orders with monthly volumes ranging from [MIN] to [MAX]. [MONTH] was the busiest with [X] orders generating $[Y] in revenue."
+    },
+    {
+      "id": 9,
+      "user_query": "Average review score by product category, top 10 categories",
+      "reasoning": "Calculate average review score grouped by category, filter out zero scores, rank by highest scores, limit 10.",
+      "sql": "SELECT oif.category_name_en as category, ROUND(AVG(os.review_score), 2) as avg_review, COUNT(DISTINCT os.order_id) as reviewed_orders, COUNT(CASE WHEN os.review_score >= 4 THEN 1 END) as positive_reviews, ROUND(COUNT(CASE WHEN os.review_score >= 4 THEN 1 END) * 100.0 / COUNT(*), 2) as positive_rate FROM order_summary os JOIN order_item_facts oif ON os.order_id = oif.order_id WHERE os.review_score > 0 GROUP BY oif.category_name_en HAVING COUNT(DISTINCT os.order_id) >= 50 ORDER BY avg_review DESC LIMIT 10",
+      "result_shape": "10 rows × 5 columns (category, avg_review, orders, positive_count, positive_rate)",
+      "chart_type": "bar",
+      "chart_config": {
+        "x": "category",
+        "y": "avg_review",
+        "title": "Top 10 Categories by Average Review Score"
+      },
+      "insight": "[CATEGORY] leads with an average review score of [X] stars and [Y]% positive rate. The top 10 categories all maintain scores above [Z] stars."
+    },
+    {
+      "id": 10,
+      "user_query": "Show total revenue and order count by state",
+      "reasoning": "Aggregate GMV and orders by customer state. Use order_summary with customer location.",
+      "sql": "SELECT customer_state as state, COUNT(DISTINCT order_id) as order_count, ROUND(SUM(order_gmv), 2) as total_revenue, ROUND(AVG(order_gmv), 2) as avg_order_value FROM order_summary WHERE customer_state IS NOT NULL GROUP BY customer_state ORDER BY total_revenue DESC",
+      "result_shape": "~27 rows × 4 columns (state, orders, revenue, aov)",
+      "chart_type": "bar",
+      "chart_config": {
+        "x": "state",
+        "y": "total_revenue",
+        "title": "Revenue by State"
+      },
+      "insight": "[STATE] leads with $[X] in revenue from [Y] orders. Top 5 states account for [Z]% of total revenue, indicating geographic concentration."
+    }
+  ]
+}
+
+
