@@ -27,7 +27,6 @@ env/
 .venv
 
 # Environment variables
-.env
 .env.local
 
 # IDE
